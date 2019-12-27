@@ -1,0 +1,171 @@
+name: $(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  branches:
+    include:
+      - working/add_module_structure
+
+stages:
+- stage: RikiTools_Build
+  displayName: 'Riki.Tools Build'
+  jobs:
+  - job: Nuget_Pack_Push
+    displayName: 'Nuget pack'
+    pool:
+      name: Hosted Windows 2019 with VS2019
+
+    steps:
+    - checkout: self
+      fetchDepth: 10
+      clean: false
+
+    - task: NuGetToolInstaller@1
+      displayName: 'Use NuGet 4.9.3'
+      inputs:
+        versionSpec: 4.9.3
+
+    - template: build-steps.yaml
+      parameters:
+        repository: 'Riki.Tools.Test'
+        moduleName: 'RikiTools'
+        patToken: '$(PatToken)'
+        compressModule: 'false'
+
+    - template: build-steps.yaml
+      parameters:
+        repository: 'Riki.Tools.Test'
+        moduleName: 'RikiGoogle'
+        patToken: '$(PatToken)'
+        compressModule: 'true'
+
+    - template: build-steps.yaml
+      parameters:
+        repository: 'Riki.Tools.Test'
+        moduleName: 'RikiJwt'
+        patToken: '$(PatToken)'
+        compressModule: 'true'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Scripts'
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/Test-NugetPush.ps1'
+        ArtifactName: Riki.Tools
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Scripts'
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/PipelineHelper.psm1'
+        ArtifactName: Riki.Tools
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Scripts'
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/Update-AutomationAccountModule.ps1'
+        ArtifactName: Riki.Tools
+
+- stage: RikiTools_Release_Tag_Commits
+  displayName: 'Create Release Tag'
+  jobs:
+  - job: RikiTools_Release_Tag_Commits
+    displayName: 'Create Release Tag'
+    pool:
+      name: Hosted Windows 2019 with VS2019
+    steps:
+    - bash: ./New-ReleaseTag.sh
+        --authtoken $(PatToken)
+        --modulename RikiTools
+      displayName: 'Tag with Release number'
+      workingDirectory: $(Build.SourcesDirectory)
+
+# Package release to Azure DevOps Artifacts
+- stage: RikiTools_Package_Deployment_CI_Staging
+  displayName: 'CI and Staging Release'
+  jobs:
+  - deployment: Deployment_CI_Staging_Env
+    displayName: 'Deploy to Test Feed'
+    pool:
+      name: Hosted Windows 2019 with VS2019
+    environment: 'CI and Staging'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template: release-steps.yaml
+            parameters:
+              repository: 'Riki.Tools.Test'
+              nugetCredential: 'Riki.Tools.Test'
+              moduleName: 'RikiTools'
+              patToken: '$(PatToken)'
+              updateAutomationAccount: 'false'
+
+          - template: release-steps.yaml
+            parameters:
+              repository: 'Riki.Tools.Test'
+              nugetCredential: 'Riki.Tools.Test'
+              moduleName: 'RikiGoogle'
+              patToken: '$(PatToken)'
+              updateAutomationAccount: 'true'
+              azureSubscription: 'Development_Staging'
+              automationAccountName: 'c7-st-ause-auto-main'
+              storageAccountName: "c7staueastrgauto"
+              storageContainerName: "automationaccountmodules"
+
+          - template: release-steps.yaml
+            parameters:
+              repository: 'Riki.Tools.Test'
+              nugetCredential: 'Riki.Tools.Test'
+              moduleName: 'RikiJwt'
+              patToken: '$(PatToken)'
+              updateAutomationAccount: 'true'
+              azureSubscription: 'Development_Staging'
+              automationAccountName: 'c7-st-ause-auto-main'
+              storageAccountName: "c7staueastrgauto"
+              storageContainerName: "automationaccountmodules"
+
+
+- stage: RikiTools_Package_Deployment_Prod
+  displayName: 'Prod Release'
+  dependsOn: RikiTools_Package_Deployment_CI_Staging
+  condition: succeeded()
+  jobs:
+  - deployment: Deployment_Prod_Env
+    displayName: 'Deploy to Prod Feed'
+    pool:
+      name: Hosted Windows 2019 with VS2019
+    environment: 'Prod'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - template: release-steps.yaml
+            parameters:
+              repository: 'Riki.Tools'
+              nugetCredential: 'Riki.Tools'
+              moduleName: 'RikiTools'
+              patToken: '$(PatToken)'
+              updateAutomationAccount: 'false'
+
+          - template: release-steps.yaml
+            parameters:
+              repository: 'Riki.Tools'
+              nugetCredential: 'Riki.Tools'
+              moduleName: 'RikiGoogle'
+              patToken: '$(PatToken)'
+              updateAutomationAccount: 'true'
+              azureSubscription: 'Riki Production CSP (10364ee7-4ee6-443b-ac08-e1277dc0857b)'
+              automationAccountName: 'c7-pr-ause-auto-main'
+              storageAccountName: "c7praueastrgauto"
+              storageContainerName: "automationaccountmodules"
+
+
+          - template: release-steps.yaml
+            parameters:
+              repository: 'Riki.Tools'
+              nugetCredential: 'Riki.Tools'
+              moduleName: 'RikiJwt'
+              patToken: '$(PatToken)'
+              updateAutomationAccount: 'true'
+              azureSubscription: 'Riki Production CSP (10364ee7-4ee6-443b-ac08-e1277dc0857b)'
+              automationAccountName: 'c7-pr-ause-auto-main'
+              storageAccountName: "c7praueastrgauto"
+              storageContainerName: "automationaccountmodules"

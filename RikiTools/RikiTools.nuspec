@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>RikiTools</id>
+    <version>1.1.0</version>
+    <authors>Neil Xu</authors>
+    <owners>Riki SRE</owners>
+    <projectUrl>https://Riki.visualstudio.com/DevOps/_git/Riki.Tools</projectUrl>
+    <iconUrl>https://jsfunctionnxubd2f.blob.core.windows.net/icon/icon.png</iconUrl>
+    <description>Riki Powershell Tools</description>
+    <releaseNotes>Release 1.1.0
+    Riki Tools
+    Include all Riki Powershell modules
+    * Incrementing Minor version
+    * RikiGoogle Latest version
+    * RikiJwt Latest version
+    </releaseNotes>
+    <copyright>Copyright 2019 Riki</copyright>
+    <tags>Riki Tools</tags>
+    <dependencies>
+      <dependency id="RikiJwt" version="1.1.*" />
+      <dependency id="RikiGoogle" version="1.1.*" />
+    </dependencies>
+  </metadata>
+</package>

@@ -1,0 +1,25 @@
+parameters:
+  repository: ''
+  moduleName: ''
+  patToken: ''
+  compressModule: ''
+
+steps:
+  - task: NuGetCommand@2
+    displayName: 'NuGet pack ${{ parameters.moduleName }}'
+    inputs:
+      command: pack
+      packagesToPack: ${{ parameters.moduleName }}/${{ parameters.moduleName }}.nuspec
+      packDestination: '$(Build.SourcesDirectory)/${{ parameters.moduleName }}'
+
+  - powershell: .\Compress-Module.ps1
+      -ModuleName ${{ parameters.moduleName }}
+    displayName: 'Zip Module ${{ parameters.moduleName }}'
+    condition: eq(${{ parameters.compressModule }}, 'true')
+    workingDirectory: $(Build.SourcesDirectory)
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Nuget Artifacts: ${{ parameters.moduleName }}'
+    inputs:
+      PathtoPublish: '$(Build.SourcesDirectory)/${{ parameters.moduleName }}'
+      ArtifactName: 'Riki.Tools/${{ parameters.moduleName }}'

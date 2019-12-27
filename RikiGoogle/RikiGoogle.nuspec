@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>RikiGoogle</id>
+    <version>1.1.0</version>
+    <authors>Neil Xu</authors>
+    <owners>Riki SRE</owners>
+    <projectUrl>https://Riki.visualstudio.com/DevOps/_git/Riki.Tools</projectUrl>
+    <iconUrl>https://jsfunctionnxubd2f.blob.core.windows.net/icon/icon.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Riki Google Module</description>
+    <releaseNotes>1.1.0
+    * Incrementing minor version
+    * Update function variable names
+    * Add synopsis
+    </releaseNotes>
+    <copyright>Copyright 2019 Riki</copyright>
+    <tags>Riki Google</tags>
+  </metadata>
+</package>

@@ -1,0 +1,45 @@
+parameters:
+  artifact: 'Riki.Tools'
+  repository: ''
+  nugetCredential: ''
+  moduleName: ''
+  patToken: ''
+  azureSubscription: ''
+  automationAccountName: ''
+  storageAccountName: ''
+  storageContainerName: ''
+  updateAutomationAccount: ''
+
+steps:
+  # This Step is to verify the nuget package versions to avoid terminating error if verions already exits
+  - powershell: .\Test-NugetPush.ps1
+      -Repository ${{ parameters.repository }}
+      -ModuleName ${{ parameters.moduleName }}
+      -PatToken ${{ parameters.patToken }}
+    displayName: 'Validate package version ${{ parameters.moduleName }}'
+    workingDirectory: $(Agent.BuildDirectory)/Riki.Tools
+
+  - task: NuGetCommand@2
+    displayName: 'Push module ${{ parameters.moduleName }} to Nuget feed'
+    condition: eq(variables['RunNuget'], 'true')
+    inputs:
+      command: push
+      packagesToPush: '$(Agent.BuildDirectory)/${{ parameters.artifact }}/${{ parameters.moduleName }}/*.nupkg;'
+      nuGetFeedType: external
+      publishFeedCredentials: ${{ parameters.nugetCredential }}
+
+  - task: AzurePowerShell@4
+    displayName: 'Update automation account module ${{ parameters.moduleName }}'
+    condition: eq(${{ parameters.updateAutomationAccount }}, 'true')
+    inputs:
+      preferredAzurePowerShellVersion: 1.0.0
+      azureSubscription: ${{ parameters.azureSubscription }}
+      ScriptPath: '$(Agent.BuildDirectory)/Riki.Tools/Update-AutomationAccountModule.ps1'
+      errorActionPreference: SilentlyContinue
+      ScriptArguments: >
+        -AutomationAccountName ${{ parameters.automationAccountName }}
+        -ModuleName ${{ parameters.moduleName }}
+        -StorageAccountName ${{ parameters.storageAccountName }}
+        -StorageContainerName ${{ parameters.storageContainerName }}
+        -WorkingDirectory $(Agent.BuildDirectory)/Riki.Tools
+        -Verbosity
