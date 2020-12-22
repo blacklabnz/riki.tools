@@ -106,8 +106,8 @@ stages:
               patToken: '$(PatToken)'
               updateAutomationAccount: 'true'
               azureSubscription: 'Development_Staging'
-              automationAccountName: 'c7-st-ause-auto-main'
-              storageAccountName: "c7staueastrgauto"
+              automationAccountName: 'auto-main'
+              storageAccountName: "auto"
               storageContainerName: "automationaccountmodules"
 
           - template: release-steps.yaml
@@ -118,8 +118,8 @@ stages:
               patToken: '$(PatToken)'
               updateAutomationAccount: 'true'
               azureSubscription: 'Development_Staging'
-              automationAccountName: 'c7-st-ause-auto-main'
-              storageAccountName: "c7staueastrgauto"
+              automationAccountName: 'auto-main'
+              storageAccountName: "auto"
               storageContainerName: "automationaccountmodules"
 
 
@@ -152,9 +152,9 @@ stages:
               moduleName: 'RikiGoogle'
               patToken: '$(PatToken)'
               updateAutomationAccount: 'true'
-              azureSubscription: 'Riki Production CSP (10364ee7-4ee6-443b-ac08-e1277dc0857b)'
-              automationAccountName: 'c7-pr-ause-auto-main'
-              storageAccountName: "c7praueastrgauto"
+              azureSubscription: 'Riki Production CSP'
+              automationAccountName: 'auto-main'
+              storageAccountName: "auto"
               storageContainerName: "automationaccountmodules"
 
 
@@ -165,7 +165,7 @@ stages:
               moduleName: 'RikiJwt'
               patToken: '$(PatToken)'
               updateAutomationAccount: 'true'
-              azureSubscription: 'Riki Production CSP (10364ee7-4ee6-443b-ac08-e1277dc0857b)'
-              automationAccountName: 'c7-pr-ause-auto-main'
-              storageAccountName: "c7praueastrgauto"
+              azureSubscription: 'Riki Production CSP'
+              automationAccountName: 'auto-main'
+              storageAccountName: "auto"
               storageContainerName: "automationaccountmodules"
